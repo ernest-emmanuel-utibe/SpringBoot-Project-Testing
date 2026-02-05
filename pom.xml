@@ -18,7 +18,7 @@
     <version>0.0.1-SNAPSHOT</version>
 
     <properties>
-        <java.version>21</java.version>
+        <java.version>17</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -38,49 +38,37 @@
     <build>
         <plugins>
 
-            <!-- Lock compiler explicitly -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
-                <configuration>
-                    <release>21</release>
-                </configuration>
-            </plugin>
-
+            <!-- Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
+            <!-- Maven Compiler -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <release>17</release>
+                </configuration>
+            </plugin>
+
+            <!-- OWASP Dependency Check (STABLE CONFIG) -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>12.2.0</version>
+                <version>11.1.0</version>
                 <configuration>
-                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <cveValidForHours>24</cveValidForHours>
+                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <dataDirectory>${project.build.directory}/dependency-check</dataDirectory>
+                    <analyzers>
+                        <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
+                    </analyzers>
                 </configuration>
             </plugin>
 
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>ci</id>
-            <properties>
-                <dependency.check.failOnError>false</dependency.check.failOnError>
-            </properties>
-        </profile>
-
-        <profile>
-            <id>release</id>
-            <properties>
-                <dependency.check.failOnError>true</dependency.check.failOnError>
-            </properties>
-        </profile>
-    </profiles>
 
 </project>

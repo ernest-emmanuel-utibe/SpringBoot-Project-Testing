@@ -1,7 +1,7 @@
 # =========================
 # Build stage
 # =========================
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+FROM maven:3.9.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
@@ -16,7 +16,7 @@ RUN mvn -B clean package -DskipTests
 # =========================
 # Runtime stage
 # =========================
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:17-jre-alpine
 
 # Update OS packages to pull CVE fixes (libexpat, etc.)
 RUN apk update && apk upgrade --no-cache
@@ -36,7 +36,7 @@ ENV JAVA_OPTS="-XX:+UseContainerSupport \
                -XX:+ExitOnOutOfMemoryError \
                -Djava.security.egd=file:/dev/./urandom"
 
-EXPOSE 8080
+EXPOSE 1999
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s \
   CMD wget -qO- http://localhost:8080/actuator/health || exit 1

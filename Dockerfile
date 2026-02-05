@@ -18,13 +18,16 @@ RUN mvn -B clean package -DskipTests
 # =========================
 FROM eclipse-temurin:21-jre-alpine
 
-# Security hardening
+# Update OS packages to pull CVE fixes (libexpat, etc.)
+RUN apk update && apk upgrade --no-cache
+
+# Security hardening: non-root user
 RUN addgroup -S spring && adduser -S spring -G spring
 USER spring:spring
 
 WORKDIR /app
 
-# Copy JAR
+# Copy JAR from build stage
 COPY --from=build /app/target/*.jar app.jar
 
 # JVM hardening

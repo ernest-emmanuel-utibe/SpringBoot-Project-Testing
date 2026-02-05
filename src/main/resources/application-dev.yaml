@@ -10,4 +10,3 @@ management:
         include: health,info
 
 
-NVD_API_KEY=

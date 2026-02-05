@@ -16,13 +16,10 @@
     <groupId>com.example</groupId>
     <artifactId>demo</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>demo</name>
-    <description>Spring Boot Demo</description>
 
     <properties>
         <java.version>21</java.version>
-		<maven.compiler.release>21</maven.compiler.release>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
@@ -41,21 +38,27 @@
     <build>
         <plugins>
 
-            <!-- Spring Boot -->
+            <!-- Lock compiler explicitly -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <release>21</release>
+                </configuration>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- OWASP Dependency Check -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
                 <version>12.2.0</version>
-
                 <configuration>
                     <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
-                    <dataDirectory>${user.home}/.m2/repository/org/owasp/dependency-check-data</dataDirectory>
                     <failBuildOnCVSS>7</failBuildOnCVSS>
                     <cveValidForHours>24</cveValidForHours>
                 </configuration>
@@ -64,10 +67,7 @@
         </plugins>
     </build>
 
-    <!-- 🔥 Enterprise profiles -->
     <profiles>
-
-        <!-- CI / PR profile -->
         <profile>
             <id>ci</id>
             <properties>
@@ -75,14 +75,12 @@
             </properties>
         </profile>
 
-        <!-- Release / main -->
         <profile>
             <id>release</id>
             <properties>
                 <dependency.check.failOnError>true</dependency.check.failOnError>
             </properties>
         </profile>
-
     </profiles>
 
 </project>

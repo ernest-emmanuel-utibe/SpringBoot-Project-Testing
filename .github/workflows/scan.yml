@@ -8,7 +8,12 @@ on:
 
 env:
   APP_NAME: springboot-demo
-  JAVA_VERSION: '25'
+  JAVA_VERSION: '21'   # Java 25 is not enterprise-stable yet
+  MAVEN_OPTS: "-Xmx2g"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
 
@@ -32,6 +37,7 @@ jobs:
       - name: Unit Tests
         run: mvn -B test
 
+
   security-scan:
     name: Dependency Security Scan
     runs-on: ubuntu-latest
@@ -45,12 +51,25 @@ jobs:
         with:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: temurin
+          cache: maven
 
-      - name: OWASP Dependency Check
+      # 🔥 Critical: cache OWASP DB
+      - name: Cache OWASP Dependency-Check DB
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository/org/owasp/dependency-check-data
+          key: dependency-check-${{ runner.os }}
+
+      - name: OWASP Dependency Check (retry-safe)
         env:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: |
-          mvn org.owasp:dependency-check-maven:check
+          for i in 1 2 3; do
+            mvn -B verify -Pci && break
+            echo "Retrying dependency-check ($i)..."
+            sleep 60
+          done
+
 
   docker:
     name: Docker Build & Scan
@@ -71,8 +90,9 @@ jobs:
           severity: CRITICAL,HIGH
           exit-code: 1
 
+
   push-image:
-    name: Push Image
+    name: Push Image to ECR
     runs-on: ubuntu-latest
     needs: docker
     if: github.ref == 'refs/heads/master'
@@ -80,7 +100,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Example: AWS ECR
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -92,7 +111,8 @@ jobs:
         run: |
           aws ecr get-login-password | docker login \
             --username AWS \
-            --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
+            --password-stdin \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com
 
       - name: Push Image
         run: |

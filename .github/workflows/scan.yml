@@ -72,9 +72,8 @@ jobs:
         run: |
           mvn -B org.owasp:dependency-check-maven:check \
             -DfailBuildOnCVSS=7 \
-            -DnvdApiEnabled=false \
-            -DcvssV4Enabled=false \
-            -DdataDirectory=target/dependency-check
+            -DskipSystemScope=true \
+            -Dformats=HTML,JSON
 
 
 
